@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import logging
 
 from config import settings
@@ -5,6 +6,11 @@ from pymodbus import ModbusException
 from pymodbus.client import AsyncModbusTcpClient, ModbusBaseClient
 
 logger = logging.getLogger(__name__)
+
+
+def convert_to_bin(num: int, zerofill: int) -> list[int]:
+    return list(map(int, bin(num)[2:].zfill(zerofill)[::-1]))
+
 
 def process_data(client: ModbusBaseClient, data: list):
     result = dict()
@@ -19,7 +25,7 @@ def process_data(client: ModbusBaseClient, data: list):
     return result
 
 
-async def poll_registers(address, count) -> dict | None:
+async def poll_registers(address, count, preparing_func: Callable) -> list | None:
     try:
         async with AsyncModbusTcpClient(
             settings.modbus.host,
@@ -38,7 +44,8 @@ async def poll_registers(address, count) -> dict | None:
                 if data.isError():
                     logger.error(f"Чтение регистров завершилось ошибкой: {data}")
                     return
-                return process_data(client, data.registers)
+                # return process_data(client, data.registers)
+                return data.registers
             except ModbusException as exc:
                 logger.error(f"Ошибка протокола Modbus: {exc}")
                 return
@@ -46,3 +53,6 @@ async def poll_registers(address, count) -> dict | None:
     except Exception as e:
         logger.error(f"Общая ошибка при подключении: {e}")
         return
+
+async def get curr_uza():
+
