@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from config import settings
 from custom.media_storage import MediaIdStorage
+import dialogs
 from middlewares import DbSessionMiddleware
 from states import MainSG
 from routers import start_router
@@ -41,7 +42,7 @@ async def main():
         ),
     )
     dp = Dispatcher(storage=storage)
-    dp.include_routers(start_router)
+    dp.include_routers(start_router, dialogs.main)
     setup_dialogs(dp, media_id_storage=MediaIdStorage())
     dp.update.outer_middleware(DbSessionMiddleware(db_pool))
     await bot.delete_webhook(drop_pending_updates=True)
