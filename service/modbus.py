@@ -11,7 +11,7 @@ START_HOLD = 0
 LEN_HOLD = 4
 START_INPUT = 1
 LEN_INPUT = 26
-SELECTORS = {1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "Рез."}
+SELECTORS = {0: "---", 1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "Рез."}
 
 
 def convert_to_bin(num: int, zerofill: int) -> list[int]:
@@ -35,49 +35,49 @@ def convert_values(client: ModbusBaseClient, data_chunks: Generator[list[int]]):
 
 
 def process_data(client: ModbusBaseClient, data: list):
-    return dict(
+    result = dict(
         selectors=[SELECTORS[i] for i in data[:4]],
         uzas=convert_to_bin(data[4], zerofill=4),
         pumpworks=data[5:10],
         temperatures=convert_values(client, chunks(data[10:20], 2)),
         pressures=convert_values(client, chunks(data[20:], 2)),
     )
-
+    return result
 
 async def poll_registers() -> dict | None:
-    try:
-        async with AsyncModbusTcpClient(
-            settings.modbus.host,
-            port=settings.modbus.port,
-            timeout=3,
-            retries=1,
-            reconnect_delay=0.5,
-            reconnect_delay_max=0.5,
-        ) as client:
-            if not client.connected:
-                logger.error("Нет соединения с ПЛК!")
-                return
+    # try:
+    async with AsyncModbusTcpClient(
+        settings.modbus.host,
+        port=settings.modbus.port,
+        timeout=3,
+        retries=1,
+        reconnect_delay=0.5,
+        reconnect_delay_max=0.5,
+    ) as client:
+        if not client.connected:
+            logger.error("Нет соединения с ПЛК!")
+            return
 
-            try:
-                hold_regs = await client.read_holding_registers(
-                    START_HOLD,
-                    count=LEN_HOLD,
+        try:
+            hold_regs = await client.read_holding_registers(
+                START_HOLD,
+                count=LEN_HOLD,
+            )
+            input_regs = await client.read_input_registers(
+                START_INPUT,
+                count=LEN_INPUT,
+            )
+            if hold_regs.isError() or input_regs.isError():
+                logger.error(
+                    f"Чтение регистров завершилось ошибкой: {hold_regs, input_regs}"
                 )
-                input_regs = await client.read_input_registers(
-                    START_INPUT,
-                    count=LEN_INPUT,
-                )
-                if hold_regs.isError() or input_regs.isError():
-                    logger.error(
-                        f"Чтение регистров завершилось ошибкой: {hold_regs, input_regs}"
-                    )
-                    return
-                hold_regs.registers.extend(input_regs.registers)
-                return process_data(client, hold_regs.registers)
-            except ModbusException as exc:
-                logger.error(f"Ошибка протокола Modbus: {exc}")
                 return
+            hold_regs.registers.extend(input_regs.registers)
+            return process_data(client, hold_regs.registers)
+        except ModbusException as exc:
+            logger.error(f"Ошибка протокола Modbus: {exc}")
+            return
 
-    except Exception as e:
-        logger.error(f"Общая ошибка при подключении: {e}")
-        return
+    # except Exception as e:
+    #     logger.error(f"Общая ошибка при подключении: {e}, {type(e)}")
+    #     return

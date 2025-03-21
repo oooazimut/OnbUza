@@ -3,6 +3,8 @@ from collections.abc import Iterable
 
 from PIL import Image, ImageDraw, ImageFont
 
+from config import settings
+
 
 class ImageService:
     _font_cache = {}
@@ -51,9 +53,7 @@ class ImageService:
             )
             abcissa += step
 
-        result_path = "images/result.png"
-        bg.save(result_path, optimize=True)
-        return result_path
+        bg.save(settings.common_img, optimize=True)
 
     @staticmethod
     async def print_text(
@@ -69,10 +69,7 @@ class ImageService:
             draw.text(point, str(item), fill="black", font=font)
             point = (point[0] + step, point[1])
 
-        result_path = "media/uza/result.png"
-        img.save(result_path, optimize=True)
-
-        return result_path
+        img.save(settings.common_img, optimize=True)
 
 
 async def common_info(data):

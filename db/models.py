@@ -12,13 +12,6 @@ class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
-class BaseClass(Base):
-    id: Mapped[classic_id]
-    name: Mapped[str]
-    value: Mapped[float]
-    dttm: Mapped[dttm]
-
-
 class User(Base):
     __tablename__ = "users"
 
@@ -29,22 +22,37 @@ class User(Base):
         return f"User(id={self.id!r}, name={self.name!r})"
 
 
-class Pressure(BaseClass):
+class Pressure(Base):
     __tablename__ = "pressures"
+
+    id: Mapped[classic_id]
+    name: Mapped[str]
+    value: Mapped[float]
+    dttm: Mapped[dttm]
 
     def __repr__(self) -> str:
         return f"Pressure(id={self.id!r}, value={self.value!r}, dttm={self.dttm!r})"
 
 
-class Gas_Sensor(BaseClass):
+class Gas_Sensor(Base):
     __tablename__ = "gas_sensors"
+
+    id: Mapped[classic_id]
+    name: Mapped[str]
+    value: Mapped[float]
+    dttm: Mapped[dttm]
 
     def __repr__(self) -> str:
         return f"Gas_Sensor(id={self.id!r}, value={self.value!r}, dttm={self.dttm!r})"
 
 
-class Temperature(BaseClass):
+class Temperature(Base):
     __tablename__ = "temperatures"
+
+    id: Mapped[classic_id]
+    name: Mapped[str]
+    value: Mapped[float]
+    dttm: Mapped[dttm]
 
     def __repr__(self) -> str:
         return f"Temperature(id={self.id!r}, value={self.value!r}, dttm={self.dttm!r})"

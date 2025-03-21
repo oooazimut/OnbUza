@@ -18,7 +18,12 @@ async def check_passwd(msg: Message, msg_inpt, manager: DialogManager):
     else:
         await msg.answer("Неверно, попробуйте ещё раз")
 
+
 async def on_common(clb: CallbackQuery, button, manager: DialogManager):
-    data = poll_registers()
+    data = await poll_registers()
+    if not data:
+        await clb.answer("Данных нет", show_alert=True)
+        return
+
     await common_info(data)
     await manager.switch_to(MainSG.common_info)

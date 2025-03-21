@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     db_name: str
     passwd: SecretStr
     modbus: ModBusSettings
+    common_img: str
 
     @property
     def sqlite_async_dsn(self):
