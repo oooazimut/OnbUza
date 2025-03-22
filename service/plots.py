@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from PIL import Image, ImageDraw, ImageFont
 
 from config import settings
+from service.modbus import SELECTORS
 
 
 class ImageService:
@@ -12,7 +13,7 @@ class ImageService:
 
     @staticmethod
     def _get_font(
-        font_path: str = "fonts/Ubuntu-R.ttf", font_size: int = 28
+        font_path: str = "fonts/Ubuntu-R.ttf", font_size: int = 44
     ) -> ImageFont.FreeTypeFont:
         key = (font_path, font_size)
         if key not in ImageService._font_cache:
@@ -32,7 +33,7 @@ class ImageService:
         step: int = 200,
     ):
         draw = ImageDraw.Draw(bg)
-        font = ImageService._get_font(font_size=38)
+        font = ImageService._get_font(font_size=44)
         path = f"images/templates/{name}"
 
         image_cache = ImageService._image_cache.setdefault(name, {})
@@ -46,7 +47,7 @@ class ImageService:
 
             bg.paste(element, (abcissa, ordinata), element)
             draw.text(
-                (abcissa + 60, ordinata + 60),
+                (abcissa + 60, ordinata + 80),
                 f"УЗА-{str(position)}",
                 fill="black",
                 font=font,
@@ -61,7 +62,7 @@ class ImageService:
         text_list: list[str | int],
         point: tuple[float, float],
         step: int = 200,
-        fontsize=33,
+        fontsize=44,
     ):
         draw = ImageDraw.Draw(img)
         font = ImageService._get_font("fonts/Ubuntu-R.ttf", font_size=fontsize)
@@ -73,11 +74,15 @@ class ImageService:
 
 
 async def common_info(data):
-    bg_img = Image.new("RGBA", (1000, 1400), (255, 255, 255))
+    bg_img = Image.new("RGBA", (1000, 800), (255, 255, 255))
+    draw = ImageDraw.Draw(bg_img)
+    font = ImageService._get_font()
+    draw.text((400, 350), "давление:", fill="black", font=font)
     await asyncio.gather(
-        ImageService.paste_row(bg_img, data["uzas"], "uza", 50),
-        ImageService.print_text(bg_img, data["selectors"], (50, 200)),
-        ImageService.print_text(bg_img, data["temperatures"], (50, 300)),
-        ImageService.print_text(bg_img, data["pumpworks"], (50, 400)),
-        ImageService.print_text(bg_img, data["pressures"], (50, 500)),
+        ImageService.paste_row(bg_img, data["uzas"], "uza", 10, abcissa=10, size=230, step=245),
+        ImageService.print_text(bg_img, data["selectors"], (70, 140), step=245),
+        ImageService.print_text(bg_img, list(SELECTORS.values())[1::], (40, 290), fontsize=52),
+        # ImageService.print_text(bg_img, data["temperatures"], (50, 300)),
+        # ImageService.print_text(bg_img, data["pumpworks"], (50, 400)),
+        # ImageService.print_text(bg_img, data["pressures"], (50, 500)),
     )

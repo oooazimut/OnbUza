@@ -11,7 +11,7 @@ START_HOLD = 0
 LEN_HOLD = 4
 START_INPUT = 1
 LEN_INPUT = 26
-SELECTORS = {0: "---", 1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "Рез."}
+SELECTORS = {0: "--------", 1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "РЕЗ."}
 
 
 def convert_to_bin(num: int, zerofill: int) -> list[int]:
