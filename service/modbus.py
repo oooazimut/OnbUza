@@ -38,9 +38,9 @@ def process_data(client: ModbusBaseClient, data: list):
     result = dict(
         selectors=[SELECTORS[i] for i in data[:4]],
         uzas=convert_to_bin(data[4], zerofill=4),
-        pumpworks=data[5:10],
-        temperatures=convert_values(client, chunks(data[10:20], 2)),
-        pressures=convert_values(client, chunks(data[20:], 2)),
+        pumpworks=[f'{i} ч.' for i in data[5:10]],
+        temperatures=[f'{round(i)} °C' for i in convert_values(client, chunks(data[10:20], 2))],
+        pressures=[f'{i} МПа'  for i in convert_values(client, chunks(data[20:], 2))],
     )
     return result
 

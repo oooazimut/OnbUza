@@ -23,7 +23,22 @@ class ImageService:
         return ImageService._font_cache[key]
 
     @staticmethod
-    async def paste_row(
+    async def paste_icon(
+        bg: Image.Image,
+        name: str,
+        point: list[int],
+        size: tuple = (60, 60),
+        step: int = 200,
+    ):
+        element_path = f"images/templates/{name}"
+        element = Image.open(element_path).resize(size).convert("RGBA")
+        for _ in range(5):
+            bg.paste(element, tuple(point), element)
+            point[0] += step
+        bg.save(settings.common_img, optimize=True)
+
+    @staticmethod
+    async def paste_uza(
         bg: Image.Image,
         values: Iterable,
         name: str,
@@ -59,7 +74,7 @@ class ImageService:
     @staticmethod
     async def print_text(
         img: Image.Image,
-        text_list: list[str | int],
+        text_list: list[str],
         point: tuple[float, float],
         step: int = 200,
         fontsize=44,
@@ -75,14 +90,23 @@ class ImageService:
 
 async def common_info(data):
     bg_img = Image.new("RGBA", (1000, 800), (255, 255, 255))
-    draw = ImageDraw.Draw(bg_img)
-    font = ImageService._get_font()
-    draw.text((400, 350), "давление:", fill="black", font=font)
+    # draw = ImageDraw.Draw(bg_img)
+    # font = ImageService._get_font()
+    # draw.text((30, 400), "температура:", fill="black", font=font)
+    # draw.text((30, 540), "наработка:", fill="black", font=font)
+    # draw.text((3, 680), "давление:", fill="black", font=font)
     await asyncio.gather(
-        ImageService.paste_row(bg_img, data["uzas"], "uza", 10, abcissa=10, size=230, step=245),
+        ImageService.paste_uza(
+            bg_img, data["uzas"], "uza", 10, abcissa=10, size=230, step=245
+        ),
         ImageService.print_text(bg_img, data["selectors"], (70, 140), step=245),
-        ImageService.print_text(bg_img, list(SELECTORS.values())[1::], (40, 290), fontsize=52),
-        # ImageService.print_text(bg_img, data["temperatures"], (50, 300)),
-        # ImageService.print_text(bg_img, data["pumpworks"], (50, 400)),
-        # ImageService.print_text(bg_img, data["pressures"], (50, 500)),
+        ImageService.print_text(
+            bg_img, list(SELECTORS.values())[1::], (40, 300), fontsize=52
+        ),
+        ImageService.paste_icon(bg_img, "tempr.jpg", [30, 400]),
+        ImageService.print_text(bg_img, data["temperatures"], (30, 460)),
+        ImageService.paste_icon(bg_img, 'clock.png', [30, 540]),
+        ImageService.print_text(bg_img, data["pumpworks"], (30, 600)),
+        ImageService.paste_icon(bg_img, 'pressure.jpg', [30, 680]),
+        ImageService.print_text(bg_img, data["pressures"], (30, 740)),
     )
