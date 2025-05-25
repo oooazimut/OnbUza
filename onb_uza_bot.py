@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.base import DefaultKeyBuilder
@@ -14,6 +15,7 @@ from config import settings
 from custom.media_storage import MediaIdStorage
 import dialogs
 from middlewares import DbSessionMiddleware
+from service.modbus import poll_registers
 from states import MainSG
 from routers import start_router
 
@@ -28,12 +30,21 @@ async def main():
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
     )
-    # engine = create_async_engine(settings.sqlite_async_dsn, echo=False)
-    # db_pool = async_sessionmaker(engine, expire_on_commit=False)
+    engine = create_async_engine(settings.sqlite_async_dsn, echo=False)
+    db_pool = async_sessionmaker(engine, expire_on_commit=False)
     bot = Bot(
         token=settings.bot_token.get_secret_value(),
         default=DefaultBotProperties(parse_mode="HTML"),
     )
+    scheduler = AsyncIOScheduler()
+    scheduler.start()
+    scheduler.add_job(
+        poll_registers,
+        trigger="interval",
+        seconds=15,
+        id="polling",
+    )
+
     storage = RedisStorage(
         Redis(),
         key_builder=DefaultKeyBuilder(
@@ -44,7 +55,7 @@ async def main():
     dp = Dispatcher(storage=storage)
     dp.include_routers(start_router, dialogs.main)
     setup_dialogs(dp, media_id_storage=MediaIdStorage())
-    # dp.update.outer_middleware(DbSessionMiddleware(db_pool))
+    dp.update.outer_middleware(DbSessionMiddleware(db_pool))
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 

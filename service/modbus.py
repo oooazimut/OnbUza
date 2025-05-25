@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 START_HOLD = 0
 LEN_HOLD = 4
 START_INPUT = 1
-LEN_INPUT = 26
+LEN_INPUT = 34
 SELECTORS = {0: "--------", 1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "РЕЗ."}
 
 
@@ -38,11 +38,16 @@ def process_data(client: ModbusBaseClient, data: list):
     result = dict(
         selectors=[SELECTORS[i] for i in data[:4]],
         uzas=convert_to_bin(data[4], zerofill=4),
-        pumpworks=[f'{i} ч.' for i in data[5:10]],
-        temperatures=[f'{round(i)} °C' for i in convert_values(client, chunks(data[10:20], 2))],
-        pressures=[f'{i} МПа'  for i in convert_values(client, chunks(data[20:], 2))],
+        # pumpworks=[f'{i} ч.' for i in data[5:10]],
+        # temperatures=[f'{round(i)} °C' for i in convert_values(client, chunks(data[10:20], 2))],
+        # pressures=[f'{i} МПа'  for i in convert_values(client, chunks(data[20:], 2))],
+        pumpworks=data[5:10],
+        temperatures=convert_values(client, chunks(data[10:20], 2)),
+        pressures=convert_values(client, chunks(data[20:30], 2)),
+        gas_sensors=convert_values(client, chunks(data[30:], 2)),
     )
     return result
+
 
 async def poll_registers() -> dict | None:
     # try:
@@ -73,7 +78,9 @@ async def poll_registers() -> dict | None:
                 )
                 return
             hold_regs.registers.extend(input_regs.registers)
-            return process_data(client, hold_regs.registers)
+            result = process_data(client, hold_regs.registers)
+            print(result)
+            return result
         except ModbusException as exc:
             logger.error(f"Ошибка протокола Modbus: {exc}")
             return
