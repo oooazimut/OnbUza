@@ -1,7 +1,7 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Back, Button
+from aiogram_dialog.widgets.kbd import Back, Button, WebApp
 from aiogram_dialog.widgets.media import StaticMedia
 from aiogram_dialog.widgets.text import Const
 
@@ -21,6 +21,7 @@ main = Dialog(
         Button(
             Const("Общая информация"), id="common_info", on_click=handlers.on_common
         ),
+        WebApp(Const("Админка"), Const("http://kitvideovpn.ru:13701/webvisu.htm")),
         state=MainSG.main,
     ),
     Window(

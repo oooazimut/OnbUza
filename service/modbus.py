@@ -79,7 +79,6 @@ async def poll_registers() -> dict | None:
                 return
             hold_regs.registers.extend(input_regs.registers)
             result = process_data(client, hold_regs.registers)
-            print(result)
             return result
         except ModbusException as exc:
             logger.error(f"Ошибка протокола Modbus: {exc}")
