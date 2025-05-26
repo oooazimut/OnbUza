@@ -22,16 +22,17 @@ class User(Base):
         return f"User(id={self.id!r}, name={self.name!r})"
 
 
-class Pressure(Base):
-    __tablename__ = "pressures"
+class Pump(Base):
+    __tablename__ = "pumps"
 
     id: Mapped[classic_id]
     name: Mapped[str]
-    value: Mapped[float]
+    pressure: Mapped[float]
+    temperature: Mapped[float]
     dttm: Mapped[dttm]
 
     def __repr__(self) -> str:
-        return f"Pressure(id={self.id!r}, value={self.value!r}, dttm={self.dttm!r})"
+        return f"Pump(id={self.id!r}, name={self.name!r}, pressure={self.pressure!r}, temperature={self.temperature!r}, dttm={self.dttm!r})"
 
 
 class Gas_Sensor(Base):
@@ -44,15 +45,3 @@ class Gas_Sensor(Base):
 
     def __repr__(self) -> str:
         return f"Gas_Sensor(id={self.id!r}, value={self.value!r}, dttm={self.dttm!r})"
-
-
-class Temperature(Base):
-    __tablename__ = "temperatures"
-
-    id: Mapped[classic_id]
-    name: Mapped[str]
-    value: Mapped[float]
-    dttm: Mapped[dttm]
-
-    def __repr__(self) -> str:
-        return f"Temperature(id={self.id!r}, value={self.value!r}, dttm={self.dttm!r})"

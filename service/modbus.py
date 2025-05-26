@@ -11,7 +11,10 @@ START_HOLD = 0
 LEN_HOLD = 4
 START_INPUT = 1
 LEN_INPUT = 34
-SELECTORS = {0: "--------", 1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "РЕЗ."}
+# SELECTORS = {0: "--------", 1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "РЕЗ."}
+SELECTORS = {0: "--------"}
+PUMPS = ("ДТ-1", "ДТ-2", "АИ-9х", "АИ-9х", "РЕЗ")
+SELECTORS.update(dict(zip(range(1, 6), PUMPS)))
 
 
 def convert_to_bin(num: int, zerofill: int) -> list[int]:
@@ -35,6 +38,7 @@ def convert_values(client: ModbusBaseClient, data_chunks: Generator[list[int]]):
 
 
 def process_data(client: ModbusBaseClient, data: list):
+    print(SELECTORS)
     result = dict(
         selectors=[SELECTORS[i] for i in data[:4]],
         uzas=convert_to_bin(data[4], zerofill=4),
