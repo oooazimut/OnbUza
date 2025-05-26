@@ -25,5 +25,11 @@ async def on_common(clb: CallbackQuery, button, manager: DialogManager):
         await clb.answer("Данных нет", show_alert=True)
         return
 
+    data.update(
+        {
+            nm: ["н/д" if (i < -500 or i > 500) else i for i in data[nm]]
+            for nm in ("pressures", "temperatures", "gas_sensors")
+        }
+    )
     await common_info(data)
     await manager.switch_to(MainSG.common_info)
