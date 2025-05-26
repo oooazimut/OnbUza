@@ -38,12 +38,12 @@ async def main():
     )
     scheduler = AsyncIOScheduler()
     scheduler.start()
-    scheduler.add_job(
-        poll_registers,
-        trigger="interval",
-        seconds=15,
-        id="polling",
-    )
+    # scheduler.add_job(
+    #     poll_registers,
+    #     trigger="interval",
+    #     seconds=5,
+    #     id="polling",
+    # )
 
     storage = RedisStorage(
         Redis(),
