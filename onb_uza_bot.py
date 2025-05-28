@@ -13,9 +13,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from config import settings
 from custom.media_storage import MediaIdStorage
+from db.repo import save_data
 import dialogs
 from middlewares import DbSessionMiddleware
-from service.modbus import poll_registers
 from states import MainSG
 from routers import start_router
 
@@ -38,12 +38,9 @@ async def main():
     )
     scheduler = AsyncIOScheduler()
     scheduler.start()
-    # scheduler.add_job(
-    #     poll_registers,
-    #     trigger="interval",
-    #     seconds=5,
-    #     id="polling",
-    # )
+    scheduler.add_job(
+        save_data, trigger="interval", seconds=5, id="polling", args=[db_pool]
+    )
 
     storage = RedisStorage(
         Redis(),
@@ -53,7 +50,7 @@ async def main():
         ),
     )
     dp = Dispatcher(storage=storage)
-    dp.include_routers(start_router, dialogs.main)
+    dp.include_routers(start_router, dialogs.main, dialogs.archive)
     setup_dialogs(dp, media_id_storage=MediaIdStorage())
     dp.update.outer_middleware(DbSessionMiddleware(db_pool))
     await bot.delete_webhook(drop_pending_updates=True)

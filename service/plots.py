@@ -104,9 +104,16 @@ async def common_info(data):
             bg_img, list(SELECTORS.values())[1::], (40, 300), fontsize=52
         ),
         ImageService.paste_icon(bg_img, "tempr.jpg", [30, 400]),
-        ImageService.print_text(bg_img, data["temperatures"], (30, 460)),
-        ImageService.paste_icon(bg_img, 'clock.png', [30, 540]),
-        ImageService.print_text(bg_img, data["pumpworks"], (30, 600)),
-        ImageService.paste_icon(bg_img, 'pressure.jpg', [30, 680]),
-        ImageService.print_text(bg_img, data["pressures"], (30, 740)),
+        ImageService.print_text(
+            bg_img, [p.temperature for p in data["pumps"]], (30, 460)
+        ),
+        ImageService.paste_icon(bg_img, "clock.png", [30, 540]),
+        ImageService.print_text(bg_img, [p.work for p in data["pumps"]], (30, 600)),
+        ImageService.paste_icon(bg_img, "pressure.jpg", [30, 680]),
+        ImageService.print_text(bg_img, [p.pressure for p in data["pumps"]], (30, 740)),
     )
+
+async def gas_plot(data):
+    pass
+
+async def pump_plot(data)

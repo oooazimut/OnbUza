@@ -29,10 +29,11 @@ class Pump(Base):
     name: Mapped[str]
     pressure: Mapped[float]
     temperature: Mapped[float]
+    work: Mapped[int]
     dttm: Mapped[dttm]
 
     def __repr__(self) -> str:
-        return f"Pump(id={self.id!r}, name={self.name!r}, pressure={self.pressure!r}, temperature={self.temperature!r}, dttm={self.dttm!r})"
+        return f"Pump(id={self.id!r}, name={self.name!r}, pressure={self.pressure!r}, temperature={self.temperature!r}, work={self.work!r}, dttm={self.dttm!r})"
 
 
 class Gas_Sensor(Base):
@@ -44,4 +45,4 @@ class Gas_Sensor(Base):
     dttm: Mapped[dttm]
 
     def __repr__(self) -> str:
-        return f"Gas_Sensor(id={self.id!r}, value={self.value!r}, dttm={self.dttm!r})"
+        return f"Gas_Sensor(id={self.id!r}, name={self.name!r}, value={self.value!r}, dttm={self.dttm!r})"

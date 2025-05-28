@@ -1,7 +1,8 @@
 import logging
 from collections.abc import Generator
 
-from config import settings
+from config import PUMPS, settings
+from db.models import Gas_Sensor, Pump
 from pymodbus import ModbusException
 from pymodbus.client import AsyncModbusTcpClient, ModbusBaseClient
 
@@ -13,7 +14,6 @@ START_INPUT = 1
 LEN_INPUT = 34
 # SELECTORS = {0: "--------", 1: "ДТ-1", 2: "ДТ-2", 3: "АИ-9х", 4: "АИ-9х", 5: "РЕЗ."}
 SELECTORS = {0: "--------"}
-PUMPS = ("ДТ-1", "ДТ-2", "АИ-9х", "АИ-9х", "РЕЗ")
 SELECTORS.update(dict(zip(range(1, 6), PUMPS)))
 
 
@@ -27,7 +27,7 @@ def chunks(array: list, chunk: int) -> Generator[list]:
 
 
 def convert_values(client: ModbusBaseClient, data_chunks: Generator[list[int]]):
-    return [
+    result = [
         client.convert_from_registers(
             chunk,
             data_type=client.DATATYPE.FLOAT32,
@@ -35,22 +35,29 @@ def convert_values(client: ModbusBaseClient, data_chunks: Generator[list[int]]):
         )
         for chunk in data_chunks
     ]
+    return result
 
 
 def process_data(client: ModbusBaseClient, data: list):
-    print(SELECTORS)
-    result = dict(
-        selectors=[SELECTORS[i] for i in data[:4]],
-        uzas=convert_to_bin(data[4], zerofill=4),
-        # pumpworks=[f'{i} ч.' for i in data[5:10]],
-        # temperatures=[f'{round(i)} °C' for i in convert_values(client, chunks(data[10:20], 2))],
-        # pressures=[f'{i} МПа'  for i in convert_values(client, chunks(data[20:], 2))],
-        pumpworks=data[5:10],
-        temperatures=convert_values(client, chunks(data[10:20], 2)),
-        pressures=convert_values(client, chunks(data[20:30], 2)),
-        gas_sensors=convert_values(client, chunks(data[30:], 2)),
+    selectors = [SELECTORS[i] for i in data[:4]]
+    uzas = convert_to_bin(data[4], zerofill=4)
+    pumpworks = data[5:10]
+    temperatures = convert_values(client, chunks(data[10:20], 2))
+    pressures = convert_values(client, chunks(data[20:30], 2))
+    gas_sensors = [
+        Gas_Sensor(name=nm, value=vl)
+        for nm, vl in enumerate(convert_values(client, chunks(data[30:], 2)), start=1)
+    ]
+    pumps = [
+        Pump(name=i[0], pressure=i[1], temperature=i[2], work=i[3])
+        for i in zip(PUMPS, pressures, temperatures, pumpworks)
+    ]
+    return dict(
+        selectors=selectors,
+        pumps=pumps,
+        gas_sensors=gas_sensors,
+        uzas=uzas,
     )
-    return result
 
 
 async def poll_registers() -> dict | None:
@@ -82,8 +89,8 @@ async def poll_registers() -> dict | None:
                 )
                 return
             hold_regs.registers.extend(input_regs.registers)
-            result = process_data(client, hold_regs.registers)
-            return result
+            return process_data(client, hold_regs.registers)
+
         except ModbusException as exc:
             logger.error(f"Ошибка протокола Modbus: {exc}")
             return

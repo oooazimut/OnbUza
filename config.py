@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     passwd: SecretStr
     modbus: ModBusSettings
     common_img: str
+    archive_img: str
 
     @property
     def sqlite_async_dsn(self):
@@ -25,5 +26,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+
+PUMPS = ["ДТ-1", "ДТ-2", "АИ-9х.1", "АИ-9х.2", "РЕЗ"]
 
 settings = Settings()
