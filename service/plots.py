@@ -1,9 +1,12 @@
 import asyncio
-from collections.abc import Iterable
-
-from PIL import Image, ImageDraw, ImageFont
+from collections.abc import Iterable, Sequence
 
 from config import settings
+from db.models import Gas_Sensor, Pump
+from matplotlib import cm
+from matplotlib import dates as mdates
+from matplotlib import pyplot as plt
+from PIL import Image, ImageDraw, ImageFont
 from service.modbus import SELECTORS
 
 
@@ -113,7 +116,37 @@ async def common_info(data):
         ImageService.print_text(bg_img, [p.pressure for p in data["pumps"]], (30, 740)),
     )
 
-async def gas_plot(data):
-    pass
 
-async def pump_plot(data)
+async def gas_plot(data: Sequence[Gas_Sensor]):
+    colors = cm.get_cmap("tab10")
+    selected_date = data[0].dttm.date()
+
+    plt.clf()
+    for i in range(1, 5):
+        x = [s.dttm for s in data if s.name == str(i)]
+        y = [s.value for s in data if s.name == str(i)]
+        plt.plot(x, y, label=f"Датчик {i}", color=colors(i - 1 % 4))
+
+    plt.title(f"Датчики загазованности, {selected_date}")
+    plt.legend()
+    date_format = mdates.DateFormatter("%H:%M")
+    plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=3))
+    plt.gca().xaxis.set_major_formatter(date_format)
+    plt.savefig(settings.archive_img)
+    plt.close()
+
+
+async def pump_plot(data: Sequence[Pump]):
+    x = [p.dttm for p in data]
+    pump_name = data[0].name
+    selected_date = x[0].date()
+    plt.clf()
+    plt.plot(x, [p.pressure for p in data], label="Давление", color="blue")
+    plt.plot(x, [p.temperature for p in data], label="Температура", color="red")
+    plt.title(f"Насос {pump_name}: {selected_date}")
+    plt.legend()
+    date_format = mdates.DateFormatter("%H:%M")
+    plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=3))
+    plt.gca().xaxis.set_major_formatter(date_format)
+    plt.savefig(settings.archive_img)
+    plt.close()

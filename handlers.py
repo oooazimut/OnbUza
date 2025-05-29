@@ -57,6 +57,11 @@ async def on_date(event, widget, manager: DialogManager, date: date):
             data = await session.scalars(
                 select(Gas_Sensor).where(func.date(Gas_Sensor.dttm) == date)
             )
+            data = data.all()
+            if not data:
+                await event.answer(f"Данных за {date} нет", show_alert=True)
+                return
+
             await gas_plot(data)
         case _:
             data = await session.scalars(
@@ -65,4 +70,11 @@ async def on_date(event, widget, manager: DialogManager, date: date):
                     Pump.name == manager.dialog_data["plot"],
                 )
             )
+            data = data.all()
+            if not data:
+                await event.answer(f"Данных за {date} нет", show_alert=True)
+                return
+
             await pump_plot(data)
+
+    await manager.switch_to(state=ArchiveSG.plot)
