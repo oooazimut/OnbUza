@@ -49,7 +49,7 @@ def process_data(client: ModbusBaseClient, data: list):
         for nm, vl in enumerate(convert_values(client, chunks(data[30:], 2)), start=1)
     ]
     pumps = [
-        Pump(name=i[0], pressure=i[1], temperature=i[2], work=i[3])
+        Pump(name=i[0], pressure=round(i[1], 1), temperature=round(i[2], 1), work=i[3])
         for i in zip(PUMPS, pressures, temperatures, pumpworks)
     ]
     return dict(
