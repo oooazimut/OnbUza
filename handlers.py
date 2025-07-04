@@ -42,7 +42,7 @@ async def select_gas_plot(clb, button, manager: DialogManager):
 
 
 async def select_pump_plot(
-    clb: CallbackQuery, select, manager: DialogManager, pump: str
+        clb: CallbackQuery, select, manager: DialogManager, pump: str
 ):
     manager.dialog_data.update(plot=pump)
     await manager.switch_to(state=ArchiveSG.date_choice)

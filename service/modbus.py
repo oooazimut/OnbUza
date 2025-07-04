@@ -23,7 +23,7 @@ def convert_to_bin(num: int, zerofill: int) -> list[int]:
 
 def chunks(array: list, chunk: int) -> Generator[list]:
     for i in range(0, len(array), chunk):
-        yield array[i : i + chunk]
+        yield array[i: i + chunk]
 
 
 def convert_values(client: ModbusBaseClient, data_chunks: Generator[list[int]]):
@@ -63,12 +63,12 @@ def process_data(client: ModbusBaseClient, data: list):
 async def poll_registers() -> dict | None:
     # try:
     async with AsyncModbusTcpClient(
-        settings.modbus.host,
-        port=settings.modbus.port,
-        timeout=3,
-        retries=1,
-        reconnect_delay=0.5,
-        reconnect_delay_max=0.5,
+            settings.modbus.host,
+            port=settings.modbus.port,
+            timeout=3,
+            retries=1,
+            reconnect_delay=0.5,
+            reconnect_delay_max=0.5,
     ) as client:
         if not client.connected:
             logger.error("Нет соединения с ПЛК!")
